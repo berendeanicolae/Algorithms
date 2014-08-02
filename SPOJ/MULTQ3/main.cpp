@@ -1,16 +1,17 @@
 #include <cstdio>
-#include <bitset>
 #include <algorithm>
 #define SIZE 400005
 using namespace std;
 
-int N, Q;
-int tree[SIZE][3];
+struct node{
+    int value[3];
+    int add;
+};
 
-void init(int li, int ls);
+int N, Q;
+node tree[SIZE];
+
 void read();
-void update(int li, int ls, int pos, int l, int r);
-int query(int li, int ls, int pos, int l, int r);
 void solve();
 
 int main()
@@ -21,7 +22,7 @@ int main()
 }
 
 void init(int pos, int li, int ls){
-    tree[pos][0] = ls-li+1;
+    tree[pos].value[0] = ls-li+1;
     if (li<ls){
         init(pos*2+1, li, (li+ls)/2);
         init(pos*2+2, (li+ls)/2+1, ls);
@@ -35,39 +36,61 @@ void read(){
     init(0, 0, N-1);
 }
 
+void push(int pos){
+    tree[pos].add %= 3;
+    if (tree[pos].value[0]+tree[pos].value[1]+tree[pos].value[2]  > 1){
+        tree[pos*2+1].add = tree[pos*2+2].add = tree[pos].add;
+    }
+    switch (tree[pos].add){
+        case 1:
+            swap(tree[pos].value[0], tree[pos].value[1]);
+            swap(tree[pos].value[0], tree[pos].value[2]);
+            break;
+        case 2:
+            swap(tree[pos].value[0], tree[pos].value[2]);
+            swap(tree[pos].value[0], tree[pos].value[1]);
+            break;
+    }
+    tree[pos].add = 0;
+}
+
+void pull(int pos){
+    tree[pos].value[0] = tree[pos*2+1].value[0]+tree[pos*2+2].value[0];
+    tree[pos].value[1] = tree[pos*2+1].value[1]+tree[pos*2+2].value[1];
+    tree[pos].value[2] = tree[pos*2+1].value[2]+tree[pos*2+2].value[2];
+}
+
 void update(int li, int ls, int pos, int l, int r){
     if (li<=l && r<=ls){
-        swap(tree[pos][0], tree[pos][1]);
-        swap(tree[pos][0], tree[pos][2]);
+        ++tree[pos].add;
+        push(pos);
         return;
     }
 
     int m = (l+r)/2;
     if (m >= ls){
         update(li, ls, pos*2+1, l, m);
-        tree[pos][0] = tree[pos*2+1][0]+tree[pos*2+2][0];
-        tree[pos][1] = tree[pos*2+1][1]+tree[pos*2+2][1];
-        tree[pos][2] = tree[pos*2+1][2]+tree[pos*2+2][2];
+        pull(pos);
         return;
     }
     if (m < li){
         update(li, ls, pos*2+2, m+1, r);
-        tree[pos][0] = tree[pos*2+1][0]+tree[pos*2+2][0];
-        tree[pos][1] = tree[pos*2+1][1]+tree[pos*2+2][1];
-        tree[pos][2] = tree[pos*2+1][2]+tree[pos*2+2][2];
+        pull(pos);
         return;
     }
 
     update(li, ls, pos*2+1, l, m);
     update(li, ls, pos*2+2, m+1, r);
-    tree[pos][0] = tree[pos*2+1][0]+tree[pos*2+2][0];
-    tree[pos][1] = tree[pos*2+1][1]+tree[pos*2+2][1];
-    tree[pos][2] = tree[pos*2+1][2]+tree[pos*2+2][2];
+    pull(pos);
 }
 
 int query(int li, int ls, int pos, int l, int r){
-    if (li<=l && r<=ls)
-        return tree[pos][0];
+    if (li<=l && r<=ls){
+        if (tree[pos].add){
+            push(pos);
+        }
+        return tree[pos].value[0];
+    }
 
     int m = (l+r)/2;
     if (m >= ls)
