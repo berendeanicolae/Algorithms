@@ -1,7 +1,5 @@
 #include <cstdio>
-#include <algorithm>
 #define SIZE 400005
-using namespace std;
 
 struct node{
     int value[3];
@@ -31,13 +29,13 @@ void init(int pos, int li, int ls){
 
 int readint() {
     int n = 0;
-    char c = getchar_unlocked();
+    char c = getchar();
     while ( !( '0' <= c && c <= '9' ) ) {
-        c = getchar_unlocked();
+        c = getchar();
     }
     while ( '0' <= c && c <= '9' ) {
         n = n * 10 + c - '0';
-        c = getchar_unlocked();
+        c = getchar();
     }
     return n;
 }
@@ -57,14 +55,19 @@ void push(int pos){
         tree[(pos<<1)+1].add += tree[pos].add;
 		tree[(pos<<1)+2].add += tree[pos].add;
     }
+    int temp;
     switch (tree[pos].add){
         case 1:
-            swap(tree[pos].value[0], tree[pos].value[1]);
-            swap(tree[pos].value[0], tree[pos].value[2]);
+            temp = tree[pos].value[0];
+            tree[pos].value[0] = tree[pos].value[2];
+            tree[pos].value[2] = tree[pos].value[1];
+            tree[pos].value[1] = temp;
             break;
         case 2:
-            swap(tree[pos].value[0], tree[pos].value[2]);
-            swap(tree[pos].value[0], tree[pos].value[1]);
+            temp = tree[pos].value[0];
+            tree[pos].value[0] = tree[pos].value[1];
+            tree[pos].value[1] = tree[pos].value[2];
+            tree[pos].value[2] = temp;
             break;
     }
     tree[pos].add = 0;
