@@ -39,7 +39,8 @@ void read(){
 void push(int pos){
     tree[pos].add %= 3;
     if (tree[pos].value[0]+tree[pos].value[1]+tree[pos].value[2]  > 1){
-        tree[pos*2+1].add = tree[pos*2+2].add = tree[pos].add;
+        tree[pos*2+1].add += tree[pos].add;
+		tree[pos*2+2].add += tree[pos].add ;
     }
     switch (tree[pos].add){
         case 1:
@@ -61,6 +62,7 @@ void pull(int pos){
 }
 
 void update(int li, int ls, int pos, int l, int r){
+    push(pos);
     if (li<=l && r<=ls){
         ++tree[pos].add;
         push(pos);
@@ -70,25 +72,33 @@ void update(int li, int ls, int pos, int l, int r){
     int m = (l+r)/2;
     if (m >= ls){
         update(li, ls, pos*2+1, l, m);
+		if (l<r){
+			push(pos*2+1);
+		}
         pull(pos);
         return;
     }
     if (m < li){
         update(li, ls, pos*2+2, m+1, r);
+		if (l<r){
+			push(pos*2+2);
+		}
         pull(pos);
         return;
     }
 
     update(li, ls, pos*2+1, l, m);
     update(li, ls, pos*2+2, m+1, r);
+	if (l<r){
+		push(pos*2+1);
+		push(pos*2+2);
+	}
     pull(pos);
 }
 
 int query(int li, int ls, int pos, int l, int r){
+	push(pos);
     if (li<=l && r<=ls){
-        if (tree[pos].add){
-            push(pos);
-        }
         return tree[pos].value[0];
     }
 
