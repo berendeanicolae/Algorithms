@@ -1,0 +1,42 @@
+#ifndef RADIX_SORT_H
+#define RADIX_SORT_H
+
+#include <vector>
+using namespace std;
+
+template <class T>
+void radix_sort(vector<T> &data) {
+	static_assert(numeric_limits<T>::is_integer && !numeric_limits<T>::is_signed,
+		"radix_sort only supports unsigned integer types");
+
+	const unsigned typeSize = numeric_limits<T>::digits;
+	constexpr int steps = (typeSize + 7) / 8;
+
+	vector<size_t> count;
+	vector<T> tempData(data.size());
+
+	for (unsigned step = 0; step < steps; ++step) {
+		unsigned lowerBit, upperBit;
+		T mask;
+
+		lowerBit = typeSize / steps*step;
+		upperBit = typeSize / steps*(step + 1);
+		mask = (T(1) << (upperBit - lowerBit)) - 1;
+
+		count.assign((T(1) << (upperBit - lowerBit)), 0);
+		for (const auto &value : data) {
+			++count[(value >> lowerBit) & mask];
+		}
+		for (size_t tr=0, oldSum = 0, newSum = 0; tr < count.size(); ++tr) {
+			newSum += count[tr];
+			count[tr] = oldSum;
+			oldSum = newSum;
+		}
+		for (const auto &value : data) {
+			tempData[count[(value >> lowerBit)& mask]++] = value;
+		}
+		data.swap(tempData);
+	}
+}
+
+#endif // RADIX_SORT_H
